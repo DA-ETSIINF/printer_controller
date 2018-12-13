@@ -1,15 +1,32 @@
 #!/usr/bin/env python3
 """
-Very simple HTTP server in python for logging requests
+Very simple HTTP server in python for logging requests and send documents
+to print, with lp command.
+
+You must set an username and password and send them in a JSON to the server
+the printer name will contain all printers (TODO allow to switch between printers)
+
+
 Usage::
 	./server.py [<port>]
+
+POST:
+
+	curl --request POST htt --data '{"username":"printme","password":"motherfucker",
+	"url":"https://example.com/filename.jpeg", "filename":"cat.jpeg"}' --header "Content-Type: application/json"
+
 """
+import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
 import json
 import subprocess
 
 import urllib.request
+
+printer_name = ['Lexmark_Lexmark_International_Lexmark_MS510dn']
+username = 'printme'
+password = 'motherfucker'
 
 class S(BaseHTTPRequestHandler):
 	def _set_response(self):
@@ -29,15 +46,18 @@ class S(BaseHTTPRequestHandler):
 		try:
 			jsondata = json.loads(post_data)
 			print(jsondata)
-			if jsondata["username"] == 'printme' and jsondata['password'] == 'motherfucker':
+			if jsondata["username"] == username and jsondata['password'] == password:
 				# download file to print
-				#urllib.request.urlretrieve(jsondata["url"], 'media/'+jsondata['filename'])
+				filename = jsondata['filename']
+				urllib.request.urlretrieve(jsondata["url"], 'media/'+filename)
 				#lp random.txt -d Lexmark_Lexmark_International_Lexmark_MS510dn
 
-				#subprocess.run(["lp", "./prueba.txt", "-d", "Lexmark_Lexmark_International_Lexmark_MS510dn"])
-				print("fadsadfs")
-				subprocess.run(["ls"])
-				urllib.request.urlretrieve(url, 'media/asd.jpg')
+				#send file to printer
+				subprocess.run("lp media/"+ filename + " -d " + printer_name[0], shell=True)
+
+
+				# Delete printed file
+				subprocess.run("rm media/" + filename, shell=True)
 
 				logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
 						 	str(self.path), str(self.headers), post_data)
@@ -71,10 +91,16 @@ def run(server_class=HTTPServer, handler_class=S, port=8081):
 	httpd.server_close()
 	logging.info('Stopping httpd...\n')
 
+
+# Before starting the server, chek if the default port has been changed and if media folder exists
 if __name__ == '__main__':
 	from sys import argv
 
 	if len(argv) == 2:
 		run(port=int(argv[1]))
 	else:
-		run()
+		if not os.path.exists("/home/el/myfile.txt"):
+			os.makedirs('media')
+		else:
+			run()
+
