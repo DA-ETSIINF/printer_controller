@@ -7,6 +7,7 @@ Usage::
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
 import json
+import subprocess
 
 import urllib.request
 
@@ -24,14 +25,18 @@ class S(BaseHTTPRequestHandler):
 	def do_POST(self):
 		content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
 		post_data = self.rfile.read(content_length) # <--- Gets the data itself
+		print("____")
 		try:
 			jsondata = json.loads(post_data)
+			print(jsondata)
 			if jsondata["username"] == 'printme' and jsondata['password'] == 'motherfucker':
 				# download file to print
 				#urllib.request.urlretrieve(jsondata["url"], 'media/'+jsondata['filename'])
 				#lp random.txt -d Lexmark_Lexmark_International_Lexmark_MS510dn
 
-
+				#subprocess.run(["lp", "./prueba.txt", "-d", "Lexmark_Lexmark_International_Lexmark_MS510dn"])
+				print("fadsadfs")
+				subprocess.run(["ls"])
 				urllib.request.urlretrieve(url, 'media/asd.jpg')
 
 				logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
@@ -39,6 +44,7 @@ class S(BaseHTTPRequestHandler):
 				self._set_response()
 				self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 		except:
+			print("aaa")
 			logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
 						 str(self.path), str(self.headers), post_data)
 
