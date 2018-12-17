@@ -66,7 +66,7 @@ class S(BaseHTTPRequestHandler):
 				lp_config = {
 					"filename": jsondata["filename"],
 					"printer_name": printers["default"],
-					"ncopies": jsondata["ncopies"]
+					"ncopies": jsondata["ncopies"] if "ncopies" in jsondata else 1
 				}
 
 				# prepare command
